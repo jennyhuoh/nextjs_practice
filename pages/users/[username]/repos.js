@@ -9,12 +9,37 @@ import { Box,
          StatNumber, 
          StatHelpText, 
          VStack,
-         FormControl
+         FormControl,
+         Avatar,
+         Grid,
+         GridItem
          } from '@chakra-ui/react'
-import { Formik, Field, Form } from 'formik';
-
+import { Formik, Field, Form } from 'formik'
+import { useState, useEffect, useContext } from 'react'
+import { useRouter } from 'next/router'
+import { StoreContext } from '../../../store'
+import { setUsername } from '../../../actions'
+import { getUserRepos, getUserDetail } from '../../api/index'
 export default function Repos() {
-    
+  const { state: {username} , dispatch} = useContext(StoreContext)
+  const [avatar, setAvatar] = useState('')
+  const [userFollowers, setUserFollowers] = useState('')
+  const [repoSum, setRepoSum] = useState('')
+  const router = useRouter()
+
+  useEffect(() => {
+    getUserDetail(username).then((response) => {
+      console.log(response.data)
+      setAvatar(response.data.avatar_url)
+      setUserFollowers(response.data.followers)
+      setRepoSum(response.data.public_repos)
+      getUserRepos(username).then((response) => {
+        console.log(response.data)
+        router.push(`/users/${username}/repos`)
+      }).catch(input => {console.log(input.response)})
+    }).catch(input => {console.log(input.response)})
+      
+  }, [username])
   return (
     <>
       <Flex bg='gray.800' h='8vh' color='white' px='9'>
@@ -23,12 +48,17 @@ export default function Repos() {
         </Box>
         <Spacer />
         <Formik
-            initialValues={{ name: '' }}
+            initialValues={{ name: 'jennyhuoh' }}
             onSubmit={(values, {setSubmitting}) => {
-                setTimeout(() => {
-                alert(JSON.stringify(values, null, 2))
-                setSubmitting(false)
-                }, 1000)
+                if(values.name !== '') {
+                    setTimeout(() => {
+                      setUsername(dispatch, values.name)
+                      setSubmitting(false)
+                    }, 1000)
+                } else {
+                    alert('欄位不可空白送出哦。')
+                    setSubmitting(false)
+                }
             }}
         >
         {(props) => (
@@ -54,15 +84,29 @@ export default function Repos() {
                         isLoading={props.isSubmitting}
                         type='submit'
                     >
-                        Submit
+                        Search
                     </Button>
                 </Box>
             </Form>
         )}
         </Formik>
       </Flex>
-      <Center bg='gray.50' h='10vh' borderBottom='0.1vw solid lightGray' fontWeight='bold' letterSpacing='0.05vw' fontSize='1.4vw'>
-        jennyhuoh's Repositories
+      <Center bg='gray.50' h='17vh' borderBottom='0.1vw solid lightGray' fontWeight='bold' letterSpacing='0.05vw' fontSize='1.4vw'>
+        <Grid
+          h='18vh'
+          templateRows='repeat(2, 1fr)'
+          templateColumns='repeat(3, 1fr)'
+          // gap={4}
+          pt='3'
+        >
+          <GridItem p='3' rowSpan={2} colSpan={1}><Avatar name='avatar' size='xl' src={avatar} /></GridItem>
+          <GridItem pt='7' colSpan={2}>{username}'s Repositories</GridItem>
+          <GridItem fontSize='sm' pt='2' colSpan={1}>followers: {userFollowers}</GridItem>
+          <GridItem fontSize='sm' pt='2' colSpan={1}>public_repos: {repoSum}</GridItem>
+        </Grid>
+        
+        {/* <img alt='avatar' src={avatar}/> */}
+        
       </Center>
       <VStack spacing='5' mt='4'>
         <Box w='46%' border='0.1vw solid lightGray' borderRadius='0.2vw'>
@@ -76,3 +120,4 @@ export default function Repos() {
     </>
   )
 }
+

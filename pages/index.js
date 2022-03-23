@@ -1,11 +1,13 @@
 import Head from 'next/head'
-import { useEffect } from 'react';
+import { useEffect, useContext } from 'react';
 import { useRouter } from 'next/router';
+import { StoreContext } from '../store'
 
 export default function Home() {
+  const { state: { username }} = useContext(StoreContext)
   const router= useRouter()
   useEffect(() => {
-    router.push(`/users/${123}/repos`)
+    router.push(`/users/${username}/repos`)
   }, [])
   return (
     <>
