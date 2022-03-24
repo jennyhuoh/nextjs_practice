@@ -1,10 +1,10 @@
 import axios from 'axios'
 
-const instance = axios.create({
+const instance = axios.create({ // 定義baseURL
     baseURL:'https://api.github.com'
 })
 
-instance.interceptors.request.use(
+instance.interceptors.request.use( // catch request得到的錯誤
     function(config){
         return config
     },
@@ -13,13 +13,14 @@ instance.interceptors.request.use(
         return Promise.reject(error);
     }
 )
+
 instance.interceptors.response.use(
     function(response){
         return response;
     },
     function(error){
         if(error.response){
-            switch(error.response.status){
+            switch(error.response.status){ // 定義不同response狀態碼需要反映的動作
                 case 404:
                     console.log('頁面不存在')
                     alert('查無此使用者，請重新輸入～')
@@ -36,5 +37,6 @@ instance.interceptors.response.use(
     }
 )
 
-export const getUserRepos = (id, data) => instance.get(`/users/${id}/repos?per_page=10?page=10`, data)
+// 所有api在這裏export
+export const getUserRepos = (id, data) => instance.get(`/users/${id}/repos?per_page=100`, data)
 export const getUserDetail = (id, data) => instance.get(`/users/${id}`, data)

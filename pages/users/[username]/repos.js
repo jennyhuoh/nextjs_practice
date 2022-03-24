@@ -12,7 +12,8 @@ import { Box,
          FormControl,
          Avatar,
          Grid,
-         GridItem
+         GridItem,
+         Image
          } from '@chakra-ui/react'
 import { Formik, Field, Form } from 'formik'
 import { useState, useEffect, useContext } from 'react'
@@ -20,28 +21,41 @@ import { useRouter } from 'next/router'
 import { StoreContext } from '../../../store'
 import { setUsername } from '../../../actions'
 import { getUserRepos, getUserDetail } from '../../api/index'
+// import star from '../../../images/img-star.png'
+
 export default function Repos() {
   const { state: {username} , dispatch} = useContext(StoreContext)
-  const [avatar, setAvatar] = useState('')
-  const [userFollowers, setUserFollowers] = useState('')
-  const [repoSum, setRepoSum] = useState('')
+  const [avatar_url, setAvatar] = useState('')
+  const [followers, setUserFollowers] = useState('')
+  const [public_repos, setRepoSum] = useState('')
+  const [allRepos, setAllRepos] = useState(null)
+  const [displayedRepos, setDisplayedRepos] = useState([])
   const router = useRouter()
 
   useEffect(() => {
-    getUserDetail(username).then((response) => {
-      console.log(response.data)
-      setAvatar(response.data.avatar_url)
-      setUserFollowers(response.data.followers)
-      setRepoSum(response.data.public_repos)
-      getUserRepos(username).then((response) => {
-        console.log(response.data)
+    getUserDetail(username).then((response) => {  // GET使用者資料，包含圖片、followers人數以及公開的repositories數量
+      setUserData(response.data)
+      getUserRepos(username).then((response) => { // GET使用者的所有repositories
         router.push(`/users/${username}/repos`)
+        setAllRepos(response.data)
+        console.log(response.data)
       }).catch(input => {console.log(input.response)})
     }).catch(input => {console.log(input.response)})
-      
   }, [username])
+
+  const setUserData = ({
+    avatar_url, 
+    followers, 
+    public_repos
+  }) => {
+    setAvatar(avatar_url)
+    setUserFollowers(followers)
+    setRepoSum(public_repos)
+  }
+
   return (
     <>
+      {/* Header: Title, 搜尋框 */}
       <Flex bg='gray.800' h='8vh' color='white' px='9'>
         <Box py='5' fontWeight='bold' letterSpacing='0.1vw'>
           Intern Homework
@@ -91,6 +105,7 @@ export default function Repos() {
         )}
         </Formik>
       </Flex>
+      {/* 使用者資料bar */}
       <Center bg='gray.50' h='17vh' borderBottom='0.1vw solid lightGray' fontWeight='bold' letterSpacing='0.05vw' fontSize='1.4vw'>
         <Grid
           h='18vh'
@@ -99,23 +114,29 @@ export default function Repos() {
           // gap={4}
           pt='3'
         >
-          <GridItem p='3' rowSpan={2} colSpan={1}><Avatar name='avatar' size='xl' src={avatar} /></GridItem>
+          <GridItem p='3' rowSpan={2} colSpan={1}><Avatar name='avatar' size='xl' src={avatar_url} /></GridItem>
           <GridItem pt='7' colSpan={2}>{username}'s Repositories</GridItem>
-          <GridItem fontSize='sm' pt='2' colSpan={1}>followers: {userFollowers}</GridItem>
-          <GridItem fontSize='sm' pt='2' colSpan={1}>public_repos: {repoSum}</GridItem>
+          <GridItem fontSize='sm' pt='2' colSpan={1}>followers: {followers}</GridItem>
+          <GridItem fontSize='sm' pt='2' colSpan={1}>public_repos: {public_repos}</GridItem>
         </Grid>
-        
-        {/* <img alt='avatar' src={avatar}/> */}
-        
       </Center>
+      {/* repositories清單 */}
       <VStack spacing='5' mt='4'>
-        <Box w='46%' border='0.1vw solid lightGray' borderRadius='0.2vw'>
-          <Stat h='17vh' p='4'>
-            <StatNumber color='blue.600'>octokit.js</StatNumber>
-            <StatLabel color='gray.600'>The all-batteries-included GitHub SDK for Browsers, Node.js, and Deno.</StatLabel>
-            <StatHelpText mt='4'>star:5315</StatHelpText>
-          </Stat>
-        </Box>
+        {
+          allRepos ? allRepos.map((repo) => {
+          return(
+            <Box key={repo.id} w='46%' border='0.1vw solid lightGray' borderRadius='0.2vw'>
+              <Stat h='16vh' p='4'>
+                <StatNumber color='blue.600'>{repo.name}</StatNumber>
+                <StatLabel mt='2' color='gray.600'>created at : {repo.created_at}</StatLabel>
+                <StatHelpText mt='2'>star : {repo.stargazers_count}</StatHelpText>
+              </Stat>
+            </Box>
+          )
+            
+            
+          }) : "hi"
+        }
       </VStack>
     </>
   )
