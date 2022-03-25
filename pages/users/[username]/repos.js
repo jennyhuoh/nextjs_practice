@@ -13,45 +13,50 @@ import { Box,
          Avatar,
          Grid,
          GridItem,
-         Image
+         Image,
+         Spinner
          } from '@chakra-ui/react'
 import { Formik, Field, Form } from 'formik'
 import { useState, useEffect, useContext } from 'react'
 import { useRouter } from 'next/router'
 import { StoreContext } from '../../../store'
-import { setUsername } from '../../../actions'
+import { setUsername, setAllRepos } from '../../../actions'
 import { getUserRepos, getUserDetail } from '../../api/index'
-// import star from '../../../images/img-star.png'
+import Link from 'next/link'
 
-export default function Repos() {
-  const { state: {username} , dispatch} = useContext(StoreContext)
-  const [avatar_url, setAvatar] = useState('')
-  const [followers, setUserFollowers] = useState('')
-  const [public_repos, setRepoSum] = useState('')
-  const [allRepos, setAllRepos] = useState(null)
+export default function Repos({userDetail}) {
+  const { state : { username , allRepos } , dispatch } = useContext(StoreContext)
+  const [user, setUser] = useState(userDetail)
+  // const [allRepos, setAllRepos] = useState(null)
   const [displayedRepos, setDisplayedRepos] = useState([])
   const router = useRouter()
+  // const { username } = router.query;
 
+  // useEffect(() => {
+  //   getUserDetail(username).then((response) => {  // GET使用者資料，包含圖片、followers人數以及公開的repositories數量
+  //     setUserData(response.data)
+  //     console.log(response.data)
+  //     getUserRepos(username).then((response) => { // GET使用者的所有repositories
+  //       router.push(`/users/${username}/repos`)
+  //       setAllRepos(dispatch, response.data)
+  //       console.log(response.data)
+  //     }).catch(input => {console.log(input.response)})
+  //   }).catch(input => {console.log(input.response)})
+  // }, [username])
   useEffect(() => {
     getUserDetail(username).then((response) => {  // GET使用者資料，包含圖片、followers人數以及公開的repositories數量
-      setUserData(response.data)
-      getUserRepos(username).then((response) => { // GET使用者的所有repositories
-        router.push(`/users/${username}/repos`)
-        setAllRepos(response.data)
-        console.log(response.data)
-      }).catch(input => {console.log(input.response)})
+      // setUserData(response.data)
+      setUser(response.data)
+      // userDetail = response.data
+      console.log(response.data)
+      router.push(`/users/${username}/repos`)
+      // getUserRepos(username).then((response) => { // GET使用者的所有repositories
+      //   router.push(`/users/${username}/repos`)
+      //   setAllRepos(dispatch, response.data)
+      //   console.log(response.data)
+      // }).catch(input => {console.log(input.response)})
     }).catch(input => {console.log(input.response)})
   }, [username])
-
-  const setUserData = ({
-    avatar_url, 
-    followers, 
-    public_repos
-  }) => {
-    setAvatar(avatar_url)
-    setUserFollowers(followers)
-    setRepoSum(public_repos)
-  }
 
   return (
     <>
@@ -66,8 +71,11 @@ export default function Repos() {
             onSubmit={(values, {setSubmitting}) => {
                 if(values.name !== '') {
                     setTimeout(() => {
+                      // getStaticProps(values.name)
+                      // getStaticPaths(values.name)
                       setUsername(dispatch, values.name)
                       setSubmitting(false)
+                      setAllRepos(dispatch, null)
                     }, 1000)
                 } else {
                     alert('欄位不可空白送出哦。')
@@ -111,34 +119,63 @@ export default function Repos() {
           h='18vh'
           templateRows='repeat(2, 1fr)'
           templateColumns='repeat(3, 1fr)'
-          // gap={4}
           pt='3'
         >
-          <GridItem p='3' rowSpan={2} colSpan={1}><Avatar name='avatar' size='xl' src={avatar_url} /></GridItem>
-          <GridItem pt='7' colSpan={2}>{username}'s Repositories</GridItem>
-          <GridItem fontSize='sm' pt='2' colSpan={1}>followers: {followers}</GridItem>
-          <GridItem fontSize='sm' pt='2' colSpan={1}>public_repos: {public_repos}</GridItem>
+          <GridItem pt='3' pr='3' rowSpan={2} colSpan={1}><Avatar name='avatar' size='xl' src={user.avatar_url} /></GridItem>
+          <GridItem pt='7' colSpan={2}>{user.login}'s Repositories</GridItem>
+          <GridItem fontSize='sm' pt='2' colSpan={1}>followers: {user.followers}</GridItem>
+          <GridItem fontSize='sm' pt='2' colSpan={1}>public_repos: {user.public_repos}</GridItem>
         </Grid>
       </Center>
       {/* repositories清單 */}
       <VStack spacing='5' mt='4'>
-        {
-          allRepos ? allRepos.map((repo) => {
+        {/* {
+          repos ? repos.map((repository) => {
           return(
-            <Box key={repo.id} w='46%' border='0.1vw solid lightGray' borderRadius='0.2vw'>
+            <Box key={repository.id} w='35%' border='0.1vw solid lightGray' borderRadius='0.2vw'>
               <Stat h='16vh' p='4'>
-                <StatNumber color='blue.600'>{repo.name}</StatNumber>
-                <StatLabel mt='2' color='gray.600'>created at : {repo.created_at}</StatLabel>
-                <StatHelpText mt='2'>star : {repo.stargazers_count}</StatHelpText>
+              <Link 
+                href="/users/[username]/repos/[repo]"
+                as={`/users/${name}/repos/${repository.name}`}
+              >
+                <StatNumber color='blue.600'>{repository.name}</StatNumber>
+              </Link>
+                <StatLabel mt='2' color='gray.600'>created at : {repository.created_at}</StatLabel>
+                <Flex mt='2'>
+                  <StatHelpText>star : {repository.stargazers_count}</StatHelpText>
+                  <Image ml='1.5' style={{width:'18px', height:'18px'}} alt='star' src='https://raw.githubusercontent.com/jennyhuoh/nextjs_practice/huoh/images/img-star.png' boxSize='50px' />
+                </Flex>
               </Stat>
             </Box>
-          )
-            
-            
-          }) : "hi"
-        }
+          )}) : // 若repository尚未載入則顯示spinner
+          <Spinner
+            thickness='4px'
+            speed='0.65s'
+            emptyColor='gray.200'
+            color='blue.500'
+            size='xl'
+            mt='10vh'
+          />
+        } */}
       </VStack>
     </>
   )
 }
 
+export async function getStaticProps(){
+  const response = await getUserDetail('jennyhuoh')
+  const userDetail = await response.data
+  const repos = await getUserRepos('jennyhuoh')
+  return {
+    props: {userDetail}
+  }
+}
+
+export async function getStaticPaths() {
+  return {
+    paths: [
+      '/users/jennyhuoh/repos'
+    ],
+    fallback: true
+  }
+}
