@@ -1,7 +1,10 @@
 import axios from 'axios'
 
 const instance = axios.create({ // 定義baseURL
-    baseURL:'https://api.github.com'
+    baseURL:'https://api.github.com',
+    // headers: {
+    //     'User-Agent': 'request'
+    // }
 })
 
 instance.interceptors.request.use( // catch request得到的錯誤
