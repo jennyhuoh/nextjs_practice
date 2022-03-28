@@ -48,13 +48,13 @@ export default function Repos({userDetail}) {
       {/* Header: Title, 搜尋框 */}
       <Flex bg='gray.800' h='8vh' color='white' px='9'>
         <Link href="/">
-          <Box py='5' fontWeight='bold' letterSpacing='0.1vw'>
+          <Box cursor='pointer' py='5' fontWeight='bold' letterSpacing='0.1vw'>
             Intern Homework
           </Box>
         </Link>
         <Spacer />
         <Formik
-            initialValues={{ name: 'jennyhuoh' }}
+            initialValues={{ name: username }}
             onSubmit={(values, {setSubmitting}) => {
                 if(values.name !== '') {
                     setTimeout(() => {
@@ -100,17 +100,29 @@ export default function Repos({userDetail}) {
       </Flex>
       {/* 使用者資料bar */}
       <Center bg='gray.50' h='17vh' borderBottom='0.1vw solid lightGray' fontWeight='bold' letterSpacing='0.05vw' fontSize='1.4vw'>
-        <Grid
-          h='18vh'
-          templateRows='repeat(2, 1fr)'
-          templateColumns='repeat(3, 1fr)'
-          pt='3'
-        >
-          <GridItem pt='3' pr='3' rowSpan={2} colSpan={1}><Avatar name='avatar' size='xl' src={user.avatar_url} /></GridItem>
-          <GridItem pt='7' colSpan={2}>{user.login}'s Repositories</GridItem>
-          <GridItem fontSize='sm' pt='2' colSpan={1}>followers: {user.followers}</GridItem>
-          <GridItem fontSize='sm' pt='2' colSpan={1}>public_repos: {user.public_repos}</GridItem>
-        </Grid>
+        {
+          user ? 
+          <Grid
+            h='18vh'
+            templateRows='repeat(2, 1fr)'
+            templateColumns='repeat(3, 1fr)'
+            pt='3'
+          >
+            <GridItem pt='3' pr='3' rowSpan={2} colSpan={1}><Avatar name='avatar' size='xl' src={user.avatar_url} /></GridItem>
+            <GridItem pt='7' colSpan={2}>{user.login}'s Repositories</GridItem>
+            <GridItem fontSize='sm' pt='2' colSpan={1}>followers: {user.followers}</GridItem>
+            <GridItem fontSize='sm' pt='2' colSpan={1}>public_repos: {user.public_repos}</GridItem>
+          </Grid> : 
+          <Spinner
+          thickness='4px'
+          speed='0.65s'
+          emptyColor='gray.200'
+          color='blue.500'
+          size='xl'
+          mt='5vh'
+          />
+        }
+        
       </Center>
       {/* repositories清單 */}
       <VStack spacing='5' mt='4'>
@@ -123,11 +135,12 @@ export default function Repos({userDetail}) {
                 href="/users/[username]/repos/[repo]"
                 as={`/users/${username}/repos/${repository.name}`}
               >
-                <StatNumber color='blue.600'>{repository.name}</StatNumber>
+                <StatNumber cursor='pointer' color='blue.600'>{repository.name}</StatNumber>
               </Link>
                 <StatLabel mt='2' color='gray.600'>created at : {repository.created_at}</StatLabel>
                 <Flex mt='2'>
                   <StatHelpText>star : {repository.stargazers_count}</StatHelpText>
+
                   <Image ml='1.5' style={{width:'18px', height:'18px'}} alt='star' src='https://raw.githubusercontent.com/jennyhuoh/nextjs_practice/huoh/public/images/img-star.png' boxSize='50px' />
                 </Flex>
               </Stat>
