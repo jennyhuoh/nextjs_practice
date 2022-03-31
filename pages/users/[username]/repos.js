@@ -25,21 +25,45 @@ import { getUserRepos, getUserDetail } from '../../api/index'
 import Link from 'next/link'
 
 export default function Repos({userDetail}) {
-  const { state : { username , allRepos } , dispatch } = useContext(StoreContext)
+  const { state : { username, allRepos : { items } } , dispatch } = useContext(StoreContext)
   const [user, setUser] = useState(userDetail)
-  // const [allRepos, setAllRepos] = useState(null)
-  const [displayedRepos, setDisplayedRepos] = useState([])
+  const [page, setPage] = useState(1)
+  const [displayOver, setDisplayOver] = useState(false)
   const router = useRouter()
+  
+  useEffect(() => {
+    window.onscroll = function(){
+      if((window.innerHeight + window.scrollY) >= document.body.offsetHeight){
+        console.log('bottom!')
+        setPage(page => page+1)
+        
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    let isMounted = true
+    if(isMounted){
+      if(!displayOver){
+        getUserRepos(username, page).then((response) => {
+          setAllRepos(dispatch, response.data)
+        })
+      }
+      if(user && (items.length === user.public_repos)){
+        console.log('inHere')
+        setDisplayOver(true)
+      }
+    }
+    console.log(page)
+    console.log(items.length)
+    console.log('outHere')
+    return () => {isMounted = false}
+  }, [page, displayOver])
 
   useEffect(() => {
     getUserDetail(username).then((response) => {  // GET使用者資料，包含圖片、followers人數以及公開的repositories數量
       setUser(response.data)
-      console.log(response.data)
       router.push(`/users/${username}/repos`)
-      getUserRepos(username).then((response) => { // GET使用者的所有repositories
-        setAllRepos(dispatch, response.data)
-        console.log(response.data)
-      }).catch(input => {console.log(input.response)})
     }).catch(input => {console.log(input.response)})
   }, [username])
 
@@ -125,9 +149,9 @@ export default function Repos({userDetail}) {
         
       </Center>
       {/* repositories清單 */}
-      <VStack spacing='5' mt='4'>
+      <VStack spacing='5' mt='4' mb='8'>
         {
-          allRepos ? allRepos.map((repository) => {
+          items.length>=1 ? items.map((repository) => {
           return(
             <Box key={repository.id} w='35%' border='0.1vw solid lightGray' borderRadius='0.2vw'>
               <Stat h='16vh' p='4'>
@@ -156,6 +180,10 @@ export default function Repos({userDetail}) {
           />
         }
       </VStack>
+      {
+        displayOver ? <Center mb='8'>沒有其他 repository 囉</Center> : ""
+      }
+      
     </>
   )
 }

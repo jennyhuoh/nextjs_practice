@@ -41,6 +41,6 @@ instance.interceptors.response.use(
 )
 
 // 所有api在這裏export
-export const getUserRepos = (id, data) => instance.get(`/users/${id}/repos?per_page=100`, data)
-export const getUserDetail = (id, data) => instance.get(`/users/${id}`, data)
+export const getUserRepos = (username, page, data) => instance.get(`/users/${username}/repos?per_page=10&page=${page}`, data)
+export const getUserDetail = (username, data) => instance.get(`/users/${username}`, data)
 export const getRepoDetail = (username, reponame, data) => instance.get(`/repos/${username}/${reponame}`, data)

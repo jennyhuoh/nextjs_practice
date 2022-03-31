@@ -2,10 +2,10 @@ import { createContext, useReducer } from 'react';
 import { SET_USERNAME, SET_ALLREPOS } from '../utils/constants';
 
 export const StoreContext = createContext();
-
+let items = []
 const initialState = {
     username: 'jennyhuoh',
-    allRepos: null
+    allRepos: {items}
 }
 
 function reducer(state, action) {
@@ -16,9 +16,12 @@ function reducer(state, action) {
                 username: action.payload
             }
         case SET_ALLREPOS:
-            return {
-                ...state, 
-                allRepos: action.payload
+            let repos = action.payload
+            Array.prototype.push.apply(items, repos)
+            console.log(items)
+            return{
+                ...state,
+                allRepos: {...state.allRepos, items}
             }
         default:
             return state;
