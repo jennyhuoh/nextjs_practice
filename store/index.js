@@ -1,11 +1,12 @@
 import { createContext, useReducer } from 'react';
-import { SET_USERNAME, SET_ALLREPOS } from '../utils/constants';
+import { SET_USERNAME, SET_ALLREPOS, REMOVE_ALLREPOS } from '../utils/constants';
 
+// 在這裡設定所有context變數的initial state
 export const StoreContext = createContext();
 let items = []
 const initialState = {
     username: 'jennyhuoh',
-    allRepos: {items}
+    allRepos: {items},
 }
 
 function reducer(state, action) {
@@ -16,12 +17,17 @@ function reducer(state, action) {
                 username: action.payload
             }
         case SET_ALLREPOS:
-            let repos = action.payload
+            const repos = action.payload
             Array.prototype.push.apply(items, repos)
-            console.log(items)
             return{
                 ...state,
                 allRepos: {...state.allRepos, items}
+            }
+        case REMOVE_ALLREPOS:
+            items = action.payload
+            return {
+                ...state,
+                allRepos: {items}
             }
         default:
             return state;
@@ -31,7 +37,6 @@ function reducer(state, action) {
 export function StoreProvider(props) {
     const [state, dispatch] = useReducer(reducer, initialState)
     const value = {state, dispatch}
-
     return(
         <StoreContext.Provider value={value}>
             {props.children}

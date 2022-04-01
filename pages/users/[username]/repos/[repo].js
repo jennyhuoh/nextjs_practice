@@ -6,12 +6,12 @@ import { Box,
         Image,
         Spinner
         } from '@chakra-ui/react'
+import { ArrowForwardIcon } from '@chakra-ui/icons'
 import { useState, useEffect, useContext } from 'react'
 import { useRouter } from 'next/router'
+import Link from 'next/link'
 import { StoreContext } from '../../../../store'
 import { getUserRepos, getRepoDetail } from '../../../api/index'
-import Link from 'next/link'
-import { ArrowForwardIcon } from '@chakra-ui/icons'
 
 export default function Repo() {
 const { state : { username } } = useContext(StoreContext)
@@ -19,9 +19,8 @@ const [repoDetail, setRepoDetail] = useState(null)
 const router = useRouter()
 const { repo } = router.query
 
+// 進入頁面後載入詳細內容
 useEffect(() => {
-    console.log(username)
-    console.log(repo)
     getRepoDetail(username, repo).then((response) => {
         console.log(response.data)
         setRepoDetail(response.data)
@@ -30,7 +29,7 @@ useEffect(() => {
 
 return (
 <>
- {/* Header: Title, 搜尋框 */}
+    {/* Header: Title */}
     <Flex bg='gray.800' h='8vh' color='white' px='9'>
         <Link 
             href="/users/[username]/repos"
@@ -40,9 +39,8 @@ return (
                 Intern Homework
             </Box>
         </Link>
-    <Spacer />
     </Flex>
-
+    {/* 顯示該repository的詳細資料，包含全名稱、stargazers_count */}
     <Center bg='gray.50' h='12vh' borderBottom='0.1vw solid lightGray' fontWeight='bold' letterSpacing='0.05vw' fontSize='1.4vw'>
     {
         repoDetail ? 
@@ -63,6 +61,7 @@ return (
     </Center>
     <Center>
     {
+        // 顯示該repository的discription，若無則顯示No description，尚未載入則顯示spinner
         repoDetail ?
         repoDetail.description === null ?
         <Center mt='5vh' w='60vw' p='5' borderRadius='lg' border='1px solid lightgray'>
@@ -81,6 +80,7 @@ return (
         />
     }
     </Center>
+    {/* 一個連至該repository github網頁的button */}
     <Center>
         <Link href={`https://github.com/${username}/${repo}`}>
             <a  target='_blank'>

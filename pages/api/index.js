@@ -1,13 +1,13 @@
+// 利用axios串接api
 import axios from 'axios'
 
-const instance = axios.create({ // 定義baseURL
-    baseURL:'https://api.github.com',
-    // headers: {
-    //     'User-Agent': 'request'
-    // }
+// 定義baseURL
+const instance = axios.create({ 
+    baseURL:'https://api.github.com'
 })
 
-instance.interceptors.request.use( // catch request得到的錯誤
+// catch request得到的錯誤
+instance.interceptors.request.use( 
     function(config){
         return config
     },
@@ -22,8 +22,9 @@ instance.interceptors.response.use(
         return response;
     },
     function(error){
+        // 定義不同response狀態碼需要反映的動作
         if(error.response){
-            switch(error.response.status){ // 定義不同response狀態碼需要反映的動作
+            switch(error.response.status){ 
                 case 404:
                     console.log('頁面不存在')
                     alert('查無此使用者，請重新輸入～')

@@ -16,59 +16,91 @@ import { Box,
          Image,
          Spinner
          } from '@chakra-ui/react'
+import { ArrowUpIcon } from '@chakra-ui/icons'
 import { Formik, Field, Form } from 'formik'
 import { useState, useEffect, useContext } from 'react'
 import { useRouter } from 'next/router'
-import { StoreContext } from '../../../store'
-import { setUsername, setAllRepos } from '../../../actions'
-import { getUserRepos, getUserDetail } from '../../api/index'
 import Link from 'next/link'
+import { StoreContext } from '../../../store'
+import { setUsername, setAllRepos, removeAllRepos } from '../../../actions'
+import { getUserRepos, getUserDetail } from '../../api/index'
 
 export default function Repos({userDetail}) {
   const { state : { username, allRepos : { items } } , dispatch } = useContext(StoreContext)
   const [user, setUser] = useState(userDetail)
   const [page, setPage] = useState(1)
   const [displayOver, setDisplayOver] = useState(false)
+  const [showArrow, setShowArrow] = useState(false)
   const router = useRouter()
-  
+  const listenScrollEvent = () => {
+    window.scrollY > 100 ? setShowArrow(true) : setShowArrow(false)
+  }
+
+  // 重新進入頁面時重新載入user的repositories
   useEffect(() => {
-    window.onscroll = function(){
-      if((window.innerHeight + window.scrollY) >= document.body.offsetHeight){
-        console.log('bottom!')
-        setPage(page => page+1)
-        
-      }
-    }
+    removeAllRepos(dispatch, [])
+    setDisplayOver(false)
+    setPage(1)
   }, [])
 
+  // 監聽畫面滑動位置控制是否顯示置頂按鈕
+  useEffect(() => {
+    window.addEventListener("scroll", listenScrollEvent)
+  }, [showArrow])
+    
+  // 監聽頁面滑到底部page+1 => 觸發下方useEffect讀取新的十個repositories
+  useEffect(() => {
+      window.onscroll = function(){
+      if((window.innerHeight + window.scrollY) >= document.body.offsetHeight){
+        console.log('bottom!')
+        if(displayOver === false){
+          setPage(page => page+1)
+        }
+      }
+    }
+  }, [displayOver])
+
+  // 1. 當page變數改變時接api讀取新十個repositories 2. 當user的repository總數讀取完成，透過displayOver設斷點
   useEffect(() => {
     let isMounted = true
     if(isMounted){
       if(!displayOver){
         getUserRepos(username, page).then((response) => {
           setAllRepos(dispatch, response.data)
-        })
+        }).catch(input => {console.log(input.response)})
       }
       if(user && (items.length === user.public_repos)){
-        console.log('inHere')
         setDisplayOver(true)
       }
     }
     console.log(page)
     console.log(items.length)
-    console.log('outHere')
     return () => {isMounted = false}
-  }, [page, displayOver])
+  }, [page, username])
 
+  // GET使用者資料，包含圖片、followers人數以及公開的repositories數量
   useEffect(() => {
-    getUserDetail(username).then((response) => {  // GET使用者資料，包含圖片、followers人數以及公開的repositories數量
-      setUser(response.data)
-      router.push(`/users/${username}/repos`)
+    let isMounted = true
+    getUserDetail(username).then((response) => {  
+      if(isMounted){
+        setUser(response.data)
+        router.push(`/users/${username}/repos`)
+      }
     }).catch(input => {console.log(input.response)})
+    return () => {isMounted = false}
   }, [username])
 
   return (
     <>
+      {
+        // 當showArrow為true，顯示置頂按鈕
+        showArrow ?
+        <Box w='12' h='12' style={{position:'fixed', right:'0', bottom:'0', cursor:'pointer'}} onClick={() => window.scrollTo(0, 0)}>
+          <Box w='9' h='9' bg='gray.800' style={{display:'flex', justifyContent:'center', alignItems:'center'}}>
+            <ArrowUpIcon w='7' h='7' color='white' />
+          </Box>
+        </Box> : ""
+      }
       {/* Header: Title, 搜尋框 */}
       <Flex bg='gray.800' h='8vh' color='white' px='9'>
         <Link href="/">
@@ -84,7 +116,9 @@ export default function Repos({userDetail}) {
                     setTimeout(() => {
                       setUsername(dispatch, values.name)
                       setSubmitting(false)
-                      setAllRepos(dispatch, null)
+                      removeAllRepos(dispatch, [])
+                      setDisplayOver(false)
+                      setPage(1)
                     }, 1000)
                 } else {
                     alert('欄位不可空白送出哦。')
@@ -149,7 +183,7 @@ export default function Repos({userDetail}) {
         
       </Center>
       {/* repositories清單 */}
-      <VStack spacing='5' mt='4' mb='8'>
+      <VStack spacing='5' mt='4' mb='1'>
         {
           items.length>=1 ? items.map((repository) => {
           return(
@@ -181,7 +215,8 @@ export default function Repos({userDetail}) {
         }
       </VStack>
       {
-        displayOver ? <Center mb='8'>沒有其他 repository 囉</Center> : ""
+        // displayOver為true時顯示讀取完成文字
+        displayOver ? <Center mt='7' mb='8'>沒有其他 repository 囉</Center> : ""
       }
       
     </>
