@@ -166,7 +166,7 @@ export default function Repos({userDetail}) {
             templateColumns='repeat(3, 1fr)'
             pt='3'
           >
-            <GridItem pt='3' pr='3' rowSpan={2} colSpan={1}><Avatar name='avatar' size='xl' src={user.avatar_url} /></GridItem>
+            <GridItem pt='3' pr='3' rowSpan={2} colSpan={1}><Avatar name={avatar} size='xl' src={user.avatar_url} /></GridItem>
             <GridItem pt='7' colSpan={2}>{user.login}'s Repositories</GridItem>
             <GridItem fontSize='sm' pt='2' colSpan={1}>followers: {user.followers}</GridItem>
             <GridItem fontSize='sm' pt='2' colSpan={1}>public_repos: {user.public_repos}</GridItem>
