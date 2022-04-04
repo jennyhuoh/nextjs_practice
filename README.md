@@ -16,6 +16,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 這項作品使用next.js以及chakra-ui開發，
 前端邏輯架構圖如下：
+
 ![未命名](https://user-images.githubusercontent.com/39110160/161484834-955169e0-25cf-42be-b20a-4d2f37caf017.png)
 
 ## Deploy至線上環境
