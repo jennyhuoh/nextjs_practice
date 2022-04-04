@@ -12,23 +12,20 @@ yarn dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+## 前端架構圖
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+這項作品使用next.js以及chakra-ui開發，
+前端邏輯架構圖如下：
+![未命名](https://user-images.githubusercontent.com/39110160/161484834-955169e0-25cf-42be-b20a-4d2f37caf017.png)
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+## Deploy至線上環境
 
-## Learn More
+作品已推上vercel:(https://nextjs-practice-sand.vercel.app/users/jennyhuoh/repos)
 
-To learn more about Next.js, take a look at the following resources:
+## 例外狀況之應變
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+1. 搜尋user時，若無該user，在api/index.js中會產生alert並重新reload頁面。
+2. 顯示項目尚未載入完成時，顯示spinner，提升使用感受，增加使用者耐心。
+3. repository列表頁面下滑後又下出現置頂按鈕，避免該user的repository過多而造成使用上的不便。
+4. 在api/index.js中分別針對不同的錯誤回報console.log出對應的文字，方便開發者管理錯誤狀況。
+5. 將context變數改動的actions獨立至actions/index.js，方便開發者統一管理全域變數。
